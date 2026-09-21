@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Request Return{% endblock %}
+{% block page %}
+<div class="mb-4"><h2 class="page-title mb-0"><i class="fa-solid fa-rotate-left text-brand me-2"></i>Request a Return</h2>
+    <div class="text-muted">Fill in the details below. Fields marked * are required.</div></div>
+{% if not orders %}
+<div class="card"><div class="empty-state"><i class="fa-solid fa-bag-shopping d-block"></i><p>You need an order before you can request a return.</p>
+    <a href="{{ url_for('products') }}" class="btn btn-brand">Browse products</a></div></div>
+{% else %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="post" enctype="multipart/form-data" class="card p-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-3">
+                {% with kind='return' %}{% include "_order_fields.html" %}{% endwith %}
+
+                <div class="col-md-6"><label class="form-label required">Return type</label>
+                    <select class="form-select" name="return_type" required>
+                        {% for t in return_types %}<option {{ 'selected' if form.get('return_type') == t }}>{{ t }}</option>{% endfor %}</select></div>
+                <div class="col-md-6"><label class="form-label required">Reason</label>
+                    <select class="form-select" name="reason" required><option value="">-- Select reason --</option>
+                        {% for r in reasons %}<option {{ 'selected' if form.get('reason') == r }}>{{ r }}</option>{% endfor %}</select></div>
+                <div class="col-md-6"><label class="form-label required">Product condition</label>
+                    <select class="form-select" name="product_condition" required><option value="">-- Select condition --</option>
+                        {% for c in conditions %}<option {{ 'selected' if form.get('product_condition') == c }}>{{ c }}</option>{% endfor %}</select></div>
+                <div class="col-md-6"><label class="form-label required">Refund method</label>
+                    <select class="form-select" name="refund_method" required>
+                        {% for m in refund_methods %}<option {{ 'selected' if form.get('refund_method') == m }}>{{ m }}</option>{% endfor %}</select></div>
+                <div class="col-md-6"><label class="form-label required">Preferred pickup date</label>
+                    <input type="date" class="form-control" name="pickup_date" min="{{ today }}" required value="{{ form.get('pickup_date', '') }}"></div>
+                <div class="col-md-6"><label class="form-label">Upload product image / evidence</label>
+                    <input type="file" class="form-control" name="image" accept=".png,.jpg,.jpeg,.gif,.webp" data-preview="#imgPreview">
+                    <div class="form-text">PNG, JPG, GIF or WEBP, max 5 MB.</div></div>
+                <div class="col-12"><img id="imgPreview" class="evidence-img d-none" alt="Preview"></div>
+                <div class="col-12"><label class="form-label required">Detailed description</label>
+                    <textarea class="form-control" name="description" rows="4" required minlength="10" placeholder="Describe the problem in detail...">{{ form.get('description', '') }}</textarea></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" id="submitRequest" class="btn btn-brand px-4" disabled><i class="fa-solid fa-paper-plane me-1"></i>Submit return request</button>
+                <a href="{{ url_for('my_orders') }}" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-4 mb-3">
+            <h6 class="fw-bold"><i class="fa-solid fa-circle-info text-brand me-1"></i>What happens next?</h6>
+            <ol class="small text-muted ps-3 mb-0">
+                <li>You receive a request ID (RET-YYYY-NNNN).</li><li>The admin reviews and approves or rejects it.</li>
+                <li>Pickup is scheduled and the product is quality-checked.</li><li>Your refund is initiated.</li>
+            </ol>
+        </div>
+        <div class="card p-4"><h6 class="fw-bold"><i class="fa-solid fa-clipboard-question text-brand me-1"></i>Smart Return Assessment</h6>
+            <p class="small text-muted mb-0">After you submit, a simple rule-based check rates your request based on the reason, condition, days since purchase, evidence image and category. It is only a decision-support feature. Final approval is performed by the administrator.</p></div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

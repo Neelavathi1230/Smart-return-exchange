@@ -1,0 +1,29 @@
+{% extends layout %}
+{% block title %}My Profile{% endblock %}
+{% block page %}
+<div class="mb-4"><h2 class="page-title mb-0">My Profile</h2><div class="text-muted">Update your details and password.</div></div>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card"><div class="card-header">Personal details</div><div class="card-body">
+            <form method="post" class="row g-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="form_type" value="details">
+                <div class="col-md-6"><label class="form-label required">Full name</label><input class="form-control" name="name" required minlength="2" value="{{ current_user.name }}"></div>
+                <div class="col-md-6"><label class="form-label required">Phone</label><input class="form-control" name="phone" required value="{{ current_user.phone }}"></div>
+                <div class="col-12"><label class="form-label">Email (cannot be changed)</label><input class="form-control" value="{{ current_user.email }}" disabled></div>
+                <div class="col-12"><label class="form-label required">Address</label><textarea class="form-control" name="address" rows="2" required>{{ current_user.address }}</textarea></div>
+                <div class="col-12"><button class="btn btn-brand"><i class="fa-solid fa-floppy-disk me-1"></i>Save changes</button></div>
+            </form></div></div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card"><div class="card-header">Change password</div><div class="card-body">
+            <form method="post" class="row g-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="form_type" value="password">
+                <div class="col-12"><label class="form-label required">Current password</label><input type="password" class="form-control" name="current_password" required></div>
+                <div class="col-12"><label class="form-label required">New password</label><input type="password" class="form-control" name="new_password" required minlength="6"></div>
+                <div class="col-12"><label class="form-label required">Confirm new password</label><input type="password" class="form-control" name="confirm_password" required minlength="6"></div>
+                <div class="col-12"><button class="btn btn-outline-brand"><i class="fa-solid fa-key me-1"></i>Update password</button></div>
+            </form></div></div>
+        <div class="card mt-3 p-3 small text-muted">Account type: <strong class="text-capitalize">{{ current_user.role }}</strong> &middot; Member since {{ current_user.created_at|d }}</div>
+    </div>
+</div>
+{% endblock %}

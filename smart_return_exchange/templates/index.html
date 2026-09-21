@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Smart Return & Exchange Management Portal{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <span class="badge bg-light text-primary mb-3 px-3 py-2"><i class="fa-solid fa-shield-heart me-1"></i> Hassle-free after-sales service</span>
+                <h1 class="display-4">Smart Return &amp; Exchange Management Portal</h1>
+                <p class="lead mt-3 mb-4">Simple, transparent and hassle-free product returns and exchanges.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if current_user %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg fw-semibold"><i class="fa-solid fa-gauge me-2"></i>Go to Dashboard</a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-semibold"><i class="fa-solid fa-right-to-bracket me-2"></i>Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-semibold"><i class="fa-solid fa-user-plus me-2"></i>Register</a>
+                    {% endif %}
+                    <a href="{{ url_for('track') }}" class="btn btn-outline-light btn-lg"><i class="fa-solid fa-location-dot me-2"></i>Track Request</a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-card p-4">
+                    <div class="d-flex align-items-center mb-3"><span class="icon-circle me-3"><i class="fa-solid fa-box-open"></i></span>
+                        <div><div class="fw-semibold">RET-2026-0001</div><small class="text-white-50">Wireless Headphones</small></div>
+                        <span class="badge status-badge status-approved ms-auto">Approved</span></div>
+                    <div class="progress mb-2" style="height:8px"><div class="progress-bar bg-warning" style="width:60%"></div></div>
+                    <small class="text-white-50">Pickup scheduled &rarr; Quality check &rarr; Refund</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" id="how">
+    <div class="container text-center">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-sub">Four easy steps from request to resolution.</p>
+        <div class="row g-4">
+            {% for icon, title, text in [
+                ('fa-user-plus', '1. Create an account', 'Register in a minute and log in securely.'),
+                ('fa-file-pen', '2. Submit a request', 'Pick your product, choose a reason and upload photos.'),
+                ('fa-user-check', '3. Admin verification', 'Our team reviews your request and updates the status.'),
+                ('fa-circle-check', '4. Refund or replacement', 'Get your refund or replacement product.') ] %}
+            <div class="col-md-6 col-lg-3"><div class="card h-100 p-4 hover-lift">
+                <span class="icon-circle mx-auto mb-3"><i class="fa-solid {{ icon }}"></i></span>
+                <h5>{{ title }}</h5><p class="text-muted mb-0">{{ text }}</p></div></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white" id="process">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-6">
+                <h3 class="section-title"><i class="fa-solid fa-rotate-left text-brand me-2"></i>Return Process</h3>
+                <p class="text-muted">Not happy with a product? Return it within its return window.</p>
+                {% for t in ['Choose the purchased product and click "Request Return"', 'Select the reason and upload evidence images', 'Admin reviews and approves your request', 'Pickup is scheduled and the product is quality-checked', 'Refund is initiated to your chosen method'] %}
+                <div class="d-flex gap-3 mb-3"><span class="step-number">{{ loop.index }}</span><div class="pt-1">{{ t }}</div></div>
+                {% endfor %}
+            </div>
+            <div class="col-lg-6">
+                <h3 class="section-title"><i class="fa-solid fa-arrows-rotate text-brand me-2"></i>Exchange Process</h3>
+                <p class="text-muted">Wrong size, colour or a faulty piece? Swap it for a replacement.</p>
+                {% for t in ['Click "Request Exchange" on an eligible order', 'Choose the replacement product, size or colour', 'Admin approves and schedules pickup of the old item', 'Quality check is completed', 'Replacement is prepared, shipped and delivered'] %}
+                <div class="d-flex gap-3 mb-3"><span class="step-number">{{ loop.index }}</span><div class="pt-1">{{ t }}</div></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" id="features">
+    <div class="container text-center">
+        <h2 class="section-title">Features</h2>
+        <p class="section-sub">Everything customers and administrators need in one place.</p>
+        <div class="row g-4">
+            {% for icon, title, text in [
+                ('fa-clock-rotate-left', 'Return window check', 'Eligibility is checked automatically against each product\'s return window.'),
+                ('fa-camera', 'Photo evidence', 'Upload product images to support your claim.'),
+                ('fa-timeline', 'Visual tracking', 'Follow every step of your request on a live timeline.'),
+                ('fa-bell', 'Instant notifications', 'Get notified whenever your request status changes.'),
+                ('fa-clipboard-check', 'Smart assessment', 'Rule-based decision support helps admins review faster.'),
+                ('fa-chart-pie', 'Admin analytics', 'Dashboard with charts for requests, reasons and trends.') ] %}
+            <div class="col-md-6 col-lg-4"><div class="card h-100 p-4 text-start hover-lift">
+                <span class="icon-circle mb-3"><i class="fa-solid {{ icon }}"></i></span>
+                <h5>{{ title }}</h5><p class="text-muted mb-0">{{ text }}</p></div></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <h2 class="section-title">Why Use Our Portal</h2>
+                <p class="text-muted">A clean, transparent process that saves time for customers and store teams alike.</p>
+                <ul class="list-unstyled">
+                    {% for t in ['No phone calls or emails - everything is online', 'Clear status at every stage of the lifecycle', 'Secure accounts with hashed passwords', 'Works on mobile, tablet and desktop'] %}
+                    <li class="mb-2"><i class="fa-solid fa-circle-check text-success me-2"></i>{{ t }}</li>{% endfor %}
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-3 text-center">
+                    {% for n, l in [('24/7', 'Request anytime'), ('100%', 'Transparent tracking'), ('2', 'Simple options'), ('1', 'Place for everything')] %}
+                    <div class="col-6"><div class="card p-4"><div class="display-6 fw-bold text-brand">{{ n }}</div><div class="text-muted">{{ l }}</div></div></div>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" id="faq">
+    <div class="container" style="max-width: 820px">
+        <h2 class="section-title text-center">Frequently Asked Questions</h2>
+        <p class="section-sub text-center">Quick answers to common questions.</p>
+        <div class="accordion" id="faqAccordion">
+            {% for q, a in [
+                ('How long do I have to return a product?', 'Every product has its own return window (for example 7, 15 or 30 days from the purchase date). The portal shows whether your order is still eligible.'),
+                ('Can I return and exchange the same order?', 'No. An order can have one open request at a time. If a request is rejected you can submit a new one while the window is still open.'),
+                ('What images should I upload?', 'Clear photos of the damage, defect or wrong item. PNG, JPG, GIF or WEBP up to 5 MB.'),
+                ('How will I know the status of my request?', 'Use the tracking timeline on your request page, the notifications page, or the public Track Request page with your request ID.'),
+                ('Is the Smart Return Assessment final?', 'No. It is a simple rule-based decision-support tool. Final approval is always given by the administrator.'),
+                ('How long do refunds take?', 'A refund starts after the pickup and quality check are completed. Its status moves from Pending to Processing to Completed.') ] %}
+            <div class="accordion-item">
+                <h2 class="accordion-header"><button class="accordion-button {{ 'collapsed' if not loop.first }}" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ loop.index }}">{{ q }}</button></h2>
+                <div id="faq{{ loop.index }}" class="accordion-collapse collapse {{ 'show' if loop.first }}" data-bs-parent="#faqAccordion"><div class="accordion-body">{{ a }}</div></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

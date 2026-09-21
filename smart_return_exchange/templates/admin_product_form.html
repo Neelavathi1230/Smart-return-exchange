@@ -1,0 +1,28 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ 'Edit' if product else 'Add' }} Product{% endblock %}
+{% block page %}
+<div class="mb-4"><h2 class="page-title mb-0">{{ 'Edit product' if product else 'Add product' }}</h2></div>
+<form method="post" enctype="multipart/form-data" class="card p-4" style="max-width:820px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-3">
+        <div class="col-md-8"><label class="form-label required">Product name</label><input class="form-control" name="name" required minlength="2" value="{{ form.get('name', '') }}"></div>
+        <div class="col-md-4"><label class="form-label required">Category</label>
+            <input class="form-control" name="category" list="cats" required value="{{ form.get('category', '') }}">
+            <datalist id="cats">{% for c in categories %}<option value="{{ c }}">{% endfor %}</datalist></div>
+        <div class="col-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="3">{{ form.get('description', '') or '' }}</textarea></div>
+        <div class="col-md-4"><label class="form-label required">Price</label><input type="number" step="0.01" min="0" class="form-control" name="price" required value="{{ form.get('price', '') if form.get('price') is not none else '' }}"></div>
+        <div class="col-md-4"><label class="form-label required">Return window (days)</label><input type="number" min="0" max="365" class="form-control" name="return_window_days" required value="{{ form.get('return_window_days', 30) }}"></div>
+        <div class="col-md-4"><label class="form-label required">Stock</label><input type="number" min="0" class="form-control" name="stock" required value="{{ form.get('stock', 0) }}"></div>
+        <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="exch" name="exchange_available" {{ 'checked' if form.get('exchange_available') }}>
+            <label class="form-check-label" for="exch">Exchange available for this product</label></div></div>
+        <div class="col-md-8"><label class="form-label">Product image</label>
+            <input type="file" class="form-control" name="image" accept=".png,.jpg,.jpeg,.gif,.webp" data-preview="#imgPreview">
+            <div class="form-text">PNG, JPG, GIF or WEBP, max 5 MB. {% if product %}Leave empty to keep the current image.{% endif %}</div></div>
+        <div class="col-md-4">
+            <img id="imgPreview" class="rounded {{ '' if product else 'd-none' }}" style="max-width:100%;max-height:120px" alt="Preview"
+                {% if product %}src="{{ url_for('static', filename=product.image or 'img/products/placeholder.svg') }}"{% endif %}></div>
+    </div>
+    <div class="d-flex gap-2 mt-4"><button class="btn btn-brand px-4"><i class="fa-solid fa-floppy-disk me-1"></i>Save product</button>
+        <a href="{{ url_for('admin_products') }}" class="btn btn-light">Cancel</a></div>
+</form>
+{% endblock %}

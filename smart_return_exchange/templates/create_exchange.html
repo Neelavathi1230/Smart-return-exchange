@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Request Exchange{% endblock %}
+{% block page %}
+<div class="mb-4"><h2 class="page-title mb-0"><i class="fa-solid fa-arrows-rotate text-brand me-2"></i>Request an Exchange</h2>
+    <div class="text-muted">Swap your product for a replacement. Fields marked * are required.</div></div>
+{% if not orders %}
+<div class="card"><div class="empty-state"><i class="fa-solid fa-bag-shopping d-block"></i><p>You need an order before you can request an exchange.</p>
+    <a href="{{ url_for('products') }}" class="btn btn-brand">Browse products</a></div></div>
+{% else %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="post" enctype="multipart/form-data" class="card p-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-3">
+                {% with kind='exchange' %}{% include "_order_fields.html" %}{% endwith %}
+
+                <div class="col-md-6"><label class="form-label required">Exchange reason</label>
+                    <select class="form-select" name="reason" required><option value="">-- Select reason --</option>
+                        {% for r in reasons %}<option {{ 'selected' if form.get('reason') == r }}>{{ r }}</option>{% endfor %}</select></div>
+                <div class="col-md-6"><label class="form-label required">Current product condition</label>
+                    <select class="form-select" name="product_condition" required><option value="">-- Select condition --</option>
+                        {% for c in conditions %}<option {{ 'selected' if form.get('product_condition') == c }}>{{ c }}</option>{% endfor %}</select></div>
+                <div class="col-md-7"><label class="form-label required">Desired replacement product</label>
+                    <select class="form-select" name="replacement_product_id" required><option value="">-- Select replacement --</option>
+                        {% for p in replacements %}<option value="{{ p.id }}" {{ 'selected' if form.get('replacement_product_id') == p.id|string }}>{{ p.name }} ({{ p.price|money }})</option>{% endfor %}</select>
+                    <div class="form-text">Choose the same product to get a different size or colour. Any price difference is handled by the admin.</div></div>
+                <div class="col-md-5"><label class="form-label">Size / colour (if applicable)</label>
+                    <input class="form-control" name="variant" maxlength="100" placeholder="e.g. Size M, Black" value="{{ form.get('variant', '') }}"></div>
+                <div class="col-12"><label class="form-label">Upload product image / evidence</label>
+                    <input type="file" class="form-control" name="image" accept=".png,.jpg,.jpeg,.gif,.webp" data-preview="#imgPreview">
+                    <div class="form-text">PNG, JPG, GIF or WEBP, max 5 MB.</div></div>
+                <div class="col-12"><img id="imgPreview" class="evidence-img d-none" alt="Preview"></div>
+                <div class="col-12"><label class="form-label required">Description</label>
+                    <textarea class="form-control" name="description" rows="4" required minlength="10" placeholder="Tell us why you want an exchange...">{{ form.get('description', '') }}</textarea></div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" id="submitRequest" class="btn btn-brand px-4" disabled><i class="fa-solid fa-paper-plane me-1"></i>Submit exchange request</button>
+                <a href="{{ url_for('my_orders') }}" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-4 mb-3">
+            <h6 class="fw-bold"><i class="fa-solid fa-circle-info text-brand me-1"></i>Exchange steps</h6>
+            <ol class="small text-muted ps-3 mb-0">
+                <li>You receive a request ID (EXC-YYYY-NNNN).</li><li>The admin approves your exchange.</li>
+                <li>Your old product is picked up and checked.</li><li>The replacement is prepared, shipped and delivered.</li>
+            </ol>
+        </div>
+        <div class="card p-4"><h6 class="fw-bold"><i class="fa-solid fa-clipboard-question text-brand me-1"></i>Smart Return Assessment</h6>
+            <p class="small text-muted mb-0">A simple rule-based check will rate your request. It is only a decision-support feature. Final approval is performed by the administrator.</p></div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Register - Smart Return Portal{% endblock %}
+{% block page %}
+<div class="auth-wrap"><div class="auth-card" style="max-width:680px">
+    <div class="card p-4 p-md-5">
+        <div class="text-center mb-4">
+            <span class="icon-circle mb-2"><i class="fa-solid fa-user-plus"></i></span>
+            <h3 class="fw-bold">Create your account</h3>
+            <p class="text-muted mb-0">Register to request returns and exchanges</p>
+        </div>
+        <form method="post" novalidate class="needs-validation">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label required" for="name">Full name</label>
+                    <input class="form-control" id="name" name="name" required minlength="2" value="{{ form.get('name', '') }}"></div>
+                <div class="col-md-6"><label class="form-label required" for="phone">Phone number</label>
+                    <input class="form-control" id="phone" name="phone" required inputmode="tel" placeholder="10-digit number" value="{{ form.get('phone', '') }}"></div>
+                <div class="col-12"><label class="form-label required" for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required value="{{ form.get('email', '') }}"></div>
+                <div class="col-md-6"><label class="form-label required" for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required minlength="6" placeholder="Minimum 6 characters"></div>
+                <div class="col-md-6"><label class="form-label required" for="confirm_password">Confirm password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required minlength="6"></div>
+                <div class="col-12"><label class="form-label required" for="address">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="2" required minlength="5">{{ form.get('address', '') }}</textarea></div>
+            </div>
+            <button class="btn btn-brand w-100 py-2 mt-4" type="submit">Register</button>
+        </form>
+        <p class="text-center text-muted mt-4 mb-0">Already registered? <a href="{{ url_for('login') }}">Login</a></p>
+    </div>
+</div></div>
+{% endblock %}

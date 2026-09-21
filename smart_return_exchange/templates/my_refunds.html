@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}My Refunds{% endblock %}
+{% block page %}
+<div class="mb-4"><h2 class="page-title mb-0">My Refunds</h2><div class="text-muted">Refunds initiated for your approved returns.</div></div>
+{% if refunds %}
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Refund ID</th><th>Request</th><th>Product</th><th>Amount</th><th>Method</th><th>Status</th><th>Initiated</th><th>Completed</th></tr></thead>
+    <tbody>{% for f in refunds %}
+        <tr><td class="fw-semibold">{{ f.refund_code }}</td>
+            <td><a href="{{ url_for('request_details', rtype='return', rid=f.request_pk) }}">{{ f.request_code }}</a></td>
+            <td>{{ f.product_name }}</td><td>{{ f.amount|money }}</td><td>{{ f.method }}</td>
+            <td><span class="badge {{ 'bg-success' if f.status == 'Completed' else 'bg-warning text-dark' }}">{{ f.status }}</span></td>
+            <td>{{ f.created_at|d }}</td><td>{{ f.completed_at|d if f.completed_at else '-' }}</td></tr>
+    {% endfor %}</tbody></table></div></div>
+{% else %}
+<div class="card"><div class="empty-state"><i class="fa-solid fa-money-bill-transfer d-block"></i><p>No refunds yet.</p></div></div>
+{% endif %}
+{% endblock %}

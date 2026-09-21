@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Requests{% endblock %}
+{% block page %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div><h2 class="page-title mb-0">My Requests</h2><div class="text-muted">Your complete return &amp; exchange history.</div></div>
+    <a href="{{ url_for('my_orders') }}" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i>New request</a>
+</div>
+<form method="get" class="card p-3 mb-3"><div class="row g-2">
+    <div class="col-md-4"><input class="form-control" name="q" placeholder="Search by request ID or product" value="{{ q }}"></div>
+    <div class="col-md-3"><select class="form-select" name="type" data-autosubmit>
+        <option value="">All types</option><option value="return" {{ 'selected' if rtype == 'return' }}>Returns</option><option value="exchange" {{ 'selected' if rtype == 'exchange' }}>Exchanges</option></select></div>
+    <div class="col-md-3"><select class="form-select" name="status" data-autosubmit>
+        <option value="">All statuses</option>{% for s in statuses %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ s|title }}</option>{% endfor %}</select></div>
+    <div class="col-md-2 d-flex gap-2"><button class="btn btn-brand flex-grow-1">Search</button><a href="{{ url_for('my_requests') }}" class="btn btn-light">Reset</a></div>
+</div></form>
+{% if items %}
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Request ID</th><th>Type</th><th>Product</th><th>Reason</th><th>Date</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for r in items %}
+        <tr><td class="fw-semibold">{{ r.code }}</td>
+            <td><span class="badge {{ 'bg-primary' if r.rtype == 'return' else 'bg-info text-dark' }}">{{ r.rtype|title }}</span></td>
+            <td>{{ r.product_name }}</td><td>{{ r.reason }}</td><td>{{ r.created_at|d }}</td>
+            <td><span class="badge status-badge {{ r.status|badge }}">{{ r.status|title }}</span></td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-brand" href="{{ url_for('request_details', rtype=r.rtype, rid=r.id) }}">Track</a></td></tr>
+    {% endfor %}</tbody></table></div></div>
+{% else %}
+<div class="card"><div class="empty-state"><i class="fa-regular fa-folder-open d-block"></i><p>No requests found.</p></div></div>
+{% endif %}
+{% endblock %}

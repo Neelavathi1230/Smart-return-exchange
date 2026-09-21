@@ -1,0 +1,54 @@
+{# Shared by customer and admin request-detail pages. Needs: req #}
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="detail-label">Product</div>
+        <div class="d-flex align-items-center gap-2 mt-1">
+            <img src="{{ url_for('static', filename=req.product_image or 'img/products/placeholder.svg') }}" alt="" width="56" height="42" class="rounded" style="object-fit:cover">
+            <div><div class="fw-semibold">{{ req.product_name }}</div><small class="text-muted">{{ req.category }} &middot; {{ req.product_price|money }}</small></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6"><div class="detail-label">Order ID</div><div class="fw-semibold">{{ req.order_code }}</div></div>
+    <div class="col-md-3 col-6"><div class="detail-label">Purchase date</div><div class="fw-semibold">{{ req.purchase_date|d }}</div></div>
+
+    <div class="col-md-3 col-6"><div class="detail-label">Request type</div>
+        <span class="badge {{ 'bg-primary' if req.rtype == 'return' else 'bg-info text-dark' }}">{{ req.rtype|title }}</span></div>
+    <div class="col-md-3 col-6"><div class="detail-label">Reason</div><div class="fw-semibold">{{ req.reason }}</div></div>
+    <div class="col-md-3 col-6"><div class="detail-label">Product condition</div><div class="fw-semibold">{{ req.product_condition }}</div></div>
+    <div class="col-md-3 col-6"><div class="detail-label">Priority</div><div class="priority-{{ req.priority|lower }}">{{ req.priority }}</div></div>
+
+    {% if req.rtype == 'return' %}
+    <div class="col-md-3 col-6"><div class="detail-label">Return type</div><div class="fw-semibold">{{ req.return_type }}</div></div>
+    <div class="col-md-3 col-6"><div class="detail-label">Preferred pickup</div><div class="fw-semibold">{{ req.pickup_date|d }}</div></div>
+    <div class="col-md-3 col-6"><div class="detail-label">Refund method</div><div class="fw-semibold">{{ req.refund_method }}</div></div>
+    {% else %}
+    <div class="col-md-6"><div class="detail-label">Desired replacement</div>
+        <div class="fw-semibold">{{ req.replacement_name }}{% if req.variant %} <span class="text-muted">({{ req.variant }})</span>{% endif %}</div></div>
+    {% endif %}
+    <div class="col-md-3 col-6"><div class="detail-label">Eligibility</div>
+        {% if req.eligibility == 'Eligible' %}<span class="text-success fw-semibold">&#10003; Eligible for {{ req.rtype|title }}</span>
+        {% else %}<span class="text-danger fw-semibold">&#10005; Return Window Expired</span>{% endif %}</div>
+    <div class="col-md-3 col-6"><div class="detail-label">Submitted</div><div>{{ req.created_at|dt }}</div></div>
+
+    <div class="col-12"><div class="detail-label">Description</div><div class="mt-1">{{ req.description }}</div></div>
+
+    {% if req.image %}
+    <div class="col-12"><div class="detail-label mb-1">Uploaded evidence</div>
+        <a href="{{ url_for('evidence', filename=req.image) }}" target="_blank"><img src="{{ url_for('evidence', filename=req.image) }}" class="evidence-img" alt="Evidence"></a></div>
+    {% endif %}
+    {% if req.customer_reply %}
+    <div class="col-12"><div class="detail-label">Customer reply</div><div class="alert alert-secondary py-2 mb-0 mt-1">{{ req.customer_reply }}</div></div>
+    {% endif %}
+</div>
+
+<hr>
+<div class="assessment {{ req.smart_assessment|lower|replace(' ', '-') }}">
+    <div class="d-flex align-items-center gap-2 mb-1">
+        <i class="fa-solid fa-clipboard-question"></i>
+        <strong>Smart Return Assessment:</strong>
+        <span class="fw-bold">{{ req.smart_assessment }}</span>
+    </div>
+    <ul class="small mb-2 ps-3">
+        {% for n in (req.smart_notes or '').split(' | ') if n %}<li>{{ n }}</li>{% endfor %}
+    </ul>
+    <div class="small text-muted"><i class="fa-solid fa-circle-info me-1"></i>This assessment is only a decision-support feature. Final approval is performed by the administrator.</div>
+</div>

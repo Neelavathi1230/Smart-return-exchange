@@ -1,0 +1,19 @@
+{# Product/order picker used by both request forms. Needs: orders, selected_order, kind #}
+<div class="col-md-6">
+    <label class="form-label required" for="orderSelect">Product</label>
+    <select class="form-select" id="orderSelect" name="order_id" data-kind="{{ kind }}" required>
+        <option value="">-- Select purchased product --</option>
+        {% for o in orders %}
+        <option value="{{ o.id }}" {{ 'selected' if selected_order == o.id }}
+            data-code="{{ o.order_code }}" data-date="{{ o.purchase_date }}" data-days="{{ o.days_since }}"
+            data-window="{{ o.return_window_days }}" data-eligible="{{ 1 if o.eligible else 0 }}"
+            data-exchange="{{ o.exchange_available }}" data-blocked="{{ o.active_request.code if o.active_request else '' }}">
+            {{ o.product_name }} ({{ o.order_code }})</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="col-md-3 col-6"><label class="form-label" for="orderCode">Order ID</label>
+    <input class="form-control" id="orderCode" readonly placeholder="Auto-filled"></div>
+<div class="col-md-3 col-6"><label class="form-label" for="purchaseDate">Purchase date</label>
+    <input class="form-control" id="purchaseDate" readonly placeholder="Auto-filled"></div>
+<div class="col-12"><div id="eligibilityBox" class="elig-box info"><i class="fa-solid fa-circle-info"></i> Select a product to check eligibility.</div></div>

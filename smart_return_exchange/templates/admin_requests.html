@@ -1,0 +1,41 @@
+{% extends "admin_base.html" %}
+{% block title %}All Requests{% endblock %}
+{% block page %}
+<div class="mb-3"><h2 class="page-title mb-0">Return &amp; Exchange Requests</h2><div class="text-muted">{{ items|length }} request(s) found</div></div>
+
+<ul class="nav nav-pills mb-3 flex-wrap gap-1">
+    {% for key, label in [('all','All'),('return','Returns'),('exchange','Exchanges'),('pending','Pending'),('approved','Approved'),('rejected','Rejected'),('completed','Completed')] %}
+    <li class="nav-item"><a class="nav-link {{ 'active bg-primary' if flt == key else 'bg-white text-secondary' }}" style="{{ 'background:#4f46e5 !important' if flt == key }}"
+        href="{{ url_for('admin_requests', filter=key, q=q, status=status, date_from=date_from, date_to=date_to) }}">{{ label }}</a></li>
+    {% endfor %}
+</ul>
+
+<form method="get" class="card p-3 mb-3">
+    <input type="hidden" name="filter" value="{{ flt }}">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4"><label class="form-label small mb-1">Search</label><input class="form-control" name="q" placeholder="Request ID, customer or product" value="{{ q }}"></div>
+        <div class="col-md-2"><label class="form-label small mb-1">Status</label><select class="form-select" name="status"><option value="">Any</option>
+            {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ s|title }}</option>{% endfor %}</select></div>
+        <div class="col-md-2 col-6"><label class="form-label small mb-1">From</label><input type="date" class="form-control" name="date_from" value="{{ date_from }}"></div>
+        <div class="col-md-2 col-6"><label class="form-label small mb-1">To</label><input type="date" class="form-control" name="date_to" value="{{ date_to }}"></div>
+        <div class="col-md-2 d-flex gap-2"><button class="btn btn-brand flex-grow-1"><i class="fa-solid fa-filter me-1"></i>Apply</button><a class="btn btn-light" href="{{ url_for('admin_requests') }}">Reset</a></div>
+    </div>
+</form>
+
+{% if items %}
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Request ID</th><th>Customer</th><th>Product</th><th>Type</th><th>Reason</th><th>Date</th><th>Status</th><th>Priority</th><th>Action</th></tr></thead>
+    <tbody>{% for r in items %}
+        <tr><td class="fw-semibold text-nowrap">{{ r.code }}</td>
+            <td>{{ r.customer_name }}<div class="small text-muted">{{ r.customer_email }}</div></td>
+            <td>{{ r.product_name }}</td>
+            <td><span class="badge {{ 'bg-primary' if r.rtype == 'return' else 'bg-info text-dark' }}">{{ r.rtype|title }}</span></td>
+            <td>{{ r.reason }}</td><td class="text-nowrap">{{ r.created_at|d }}</td>
+            <td><span class="badge status-badge {{ r.status|badge }}">{{ r.status|title }}</span></td>
+            <td class="priority-{{ r.priority|lower }}">{{ r.priority }}</td>
+            <td><a class="btn btn-sm btn-brand" href="{{ url_for('admin_request_details', rtype=r.rtype, rid=r.id) }}">Open</a></td></tr>
+    {% endfor %}</tbody></table></div></div>
+{% else %}
+<div class="card"><div class="empty-state"><i class="fa-regular fa-folder-open d-block"></i><p>No requests match these filters.</p></div></div>
+{% endif %}
+{% endblock %}

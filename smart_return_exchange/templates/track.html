@@ -1,0 +1,37 @@
+{% extends layout %}
+{% block title %}Track Request - Smart Return Portal{% endblock %}
+{% block page %}
+<div class="mx-auto" style="max-width: 760px">
+    <div class="text-center mb-4">
+        <span class="icon-circle mb-2"><i class="fa-solid fa-location-dot"></i></span>
+        <h2 class="page-title">Track your request</h2>
+        <p class="text-muted">Enter your request ID (for example <code>RET-2026-0001</code> or <code>EXC-2026-0001</code>).</p>
+    </div>
+    <form method="get" class="card p-3 mb-4">
+        <div class="input-group input-group-lg">
+            <input class="form-control" name="code" placeholder="RET-2026-0001" value="{{ code }}" required>
+            <button class="btn btn-brand" type="submit"><i class="fa-solid fa-magnifying-glass me-1"></i>Track</button>
+        </div>
+    </form>
+
+    {% if result %}
+    <div class="card">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+                <div>
+                    <h4 class="mb-1">{{ result.code }}</h4>
+                    <div class="text-muted">{{ result.rtype|title }} request for <strong>{{ result.product_name }}</strong> &middot; submitted {{ result.created_at|d }}</div>
+                </div>
+                <span class="badge status-badge {{ result.status|badge }} fs-6">{{ result.status|title }}</span>
+            </div>
+            {% include "_timeline.html" %}
+            {% if can_open %}
+            <div class="mt-4"><a class="btn btn-outline-brand" href="{{ url_for('admin_request_details' if current_user.role == 'admin' else 'request_details', rtype=result.rtype, rid=result.id) }}">View full details</a></div>
+            {% elif not current_user %}
+            <div class="mt-4 small text-muted"><i class="fa-solid fa-lock me-1"></i>Log in to see full details of your request.</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

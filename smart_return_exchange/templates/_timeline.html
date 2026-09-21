@@ -1,0 +1,13 @@
+<ul class="timeline">
+    {% for s in timeline %}
+    <li class="timeline-item {{ s.state }}">
+        <span class="timeline-dot"><i class="fa-solid {{ s.icon }}"></i></span>
+        <div>
+            <div class="fw-semibold timeline-label">{{ s.label|title }}</div>
+            <small class="text-muted">
+                {% if s.date %}{{ s.date|dt }}{% elif s.state == 'active' %}In progress{% else %}Pending{% endif %}
+            </small>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

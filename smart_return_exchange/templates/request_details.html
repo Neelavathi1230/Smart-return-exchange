@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ req.code }}{% endblock %}
+{% block page %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ url_for('my_requests') }}">My Requests</a></li><li class="breadcrumb-item active">{{ req.code }}</li></ol></nav>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div><h2 class="page-title mb-0">{{ req.code }}</h2><div class="text-muted">{{ req.rtype|title }} request &middot; last updated {{ req.updated_at|dt }}</div></div>
+    <span class="badge status-badge {{ req.status|badge }} fs-6">{{ req.status|title }}</span>
+</div>
+
+{% if req.status == 'INFO REQUESTED' %}
+<div class="card border-warning border mb-4"><div class="card-body">
+    <h5 class="text-warning-emphasis"><i class="fa-solid fa-circle-question me-1"></i>The admin needs more information</h5>
+    <p class="mb-3">{{ req.admin_remarks }}</p>
+    <form method="post" action="{{ url_for('request_reply', rtype=req.rtype, rid=req.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <textarea class="form-control mb-2" name="reply" rows="3" required placeholder="Type your reply..."></textarea>
+        <button class="btn btn-brand"><i class="fa-solid fa-reply me-1"></i>Send reply</button>
+    </form></div></div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card mb-4"><div class="card-header">Request details</div><div class="card-body">{% include "_request_info.html" %}</div></div>
+
+        {% if req.admin_remarks and req.status != 'INFO REQUESTED' %}
+        <div class="card mb-4"><div class="card-header"><i class="fa-solid fa-comment-dots me-1"></i>Admin remarks</div><div class="card-body">{{ req.admin_remarks }}</div></div>
+        {% endif %}
+
+        {% if refund %}
+        <div class="card mb-4"><div class="card-header"><i class="fa-solid fa-money-bill-transfer me-1"></i>Refund details</div>
+            <div class="card-body"><div class="row g-3">
+                <div class="col-6 col-md-3"><div class="detail-label">Refund ID</div><div class="fw-semibold">{{ refund.refund_code }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Amount</div><div class="fw-semibold">{{ refund.amount|money }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Method</div><div>{{ refund.method }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Status</div>
+                    <span class="badge {{ 'bg-success' if refund.status == 'Completed' else 'bg-warning text-dark' }}">{{ refund.status }}</span></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Initiated</div><div>{{ refund.created_at|d }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Completed</div><div>{{ refund.completed_at|d if refund.completed_at else '-' }}</div></div>
+            </div></div></div>
+        {% endif %}
+        {% if exchange %}
+        <div class="card mb-4"><div class="card-header"><i class="fa-solid fa-arrows-rotate me-1"></i>Exchange details</div>
+            <div class="card-body"><div class="row g-3">
+                <div class="col-6 col-md-3"><div class="detail-label">Exchange ID</div><div class="fw-semibold">{{ exchange.exchange_code }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Exchange status</div><span class="badge bg-info text-dark">{{ exchange.status }}</span></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Shipping</div><div>{{ exchange.shipping_status }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Replacement</div><div>{{ req.replacement_name }}</div></div>
+            </div></div></div>
+        {% endif %}
+    </div>
+    <div class="col-lg-5">
+        <div class="card"><div class="card-header"><i class="fa-solid fa-timeline me-1"></i>Request timeline</div>
+            <div class="card-body">{% include "_timeline.html" %}</div></div>
+        {% if req.pickup_scheduled_date %}
+        <div class="alert alert-info mt-3 mb-0"><i class="fa-solid fa-calendar-check me-1"></i>Pickup scheduled for <strong>{{ req.pickup_scheduled_date|d }}</strong>.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

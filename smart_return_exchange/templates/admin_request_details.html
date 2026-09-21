@@ -1,0 +1,127 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ req.code }} - Admin{% endblock %}
+{% block page %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{{ url_for('admin_requests') }}">Requests</a></li><li class="breadcrumb-item active">{{ req.code }}</li></ol></nav>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div><h2 class="page-title mb-0">{{ req.code }}</h2><div class="text-muted">{{ req.rtype|title }} request &middot; submitted {{ req.created_at|dt }}</div></div>
+    <span class="badge status-badge {{ req.status|badge }} fs-6">{{ req.status|title }}</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="card mb-4"><div class="card-header"><i class="fa-solid fa-user me-1"></i>Customer contact information</div>
+            <div class="card-body"><div class="row g-3">
+                <div class="col-md-4"><div class="detail-label">Name</div><div class="fw-semibold">{{ req.customer_name }}</div></div>
+                <div class="col-md-4"><div class="detail-label">Email</div><div><a href="mailto:{{ req.customer_email }}">{{ req.customer_email }}</a></div></div>
+                <div class="col-md-4"><div class="detail-label">Phone</div><div><a href="tel:{{ req.customer_phone }}">{{ req.customer_phone }}</a></div></div>
+                <div class="col-12"><div class="detail-label">Address</div><div>{{ req.customer_address }}</div></div>
+            </div></div></div>
+
+        <div class="card mb-4"><div class="card-header"><i class="fa-solid fa-file-lines me-1"></i>Request details</div><div class="card-body">{% include "_request_info.html" %}</div></div>
+
+        {% if refund %}
+        <div class="card mb-4"><div class="card-header"><i class="fa-solid fa-money-bill-transfer me-1"></i>Refund</div>
+            <div class="card-body"><div class="row g-3">
+                <div class="col-6 col-md-3"><div class="detail-label">Refund ID</div><div class="fw-semibold">{{ refund.refund_code }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Amount</div><div class="fw-semibold">{{ refund.amount|money }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Method</div><div>{{ refund.method }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Status</div><span class="badge {{ 'bg-success' if refund.status == 'Completed' else 'bg-warning text-dark' }}">{{ refund.status }}</span></div>
+            </div></div></div>
+        {% endif %}
+        {% if exchange %}
+        <div class="card mb-4"><div class="card-header"><i class="fa-solid fa-arrows-rotate me-1"></i>Exchange</div>
+            <div class="card-body"><div class="row g-3">
+                <div class="col-6 col-md-3"><div class="detail-label">Exchange ID</div><div class="fw-semibold">{{ exchange.exchange_code }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Original</div><div>{{ req.product_name }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Replacement</div><div>{{ req.replacement_name }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Status</div><span class="badge bg-info text-dark">{{ exchange.status }}</span></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Shipping</div><div>{{ exchange.shipping_status }}</div></div>
+                <div class="col-6 col-md-3"><div class="detail-label">Replacement stock</div><div>{{ req.replacement_stock }}</div></div>
+            </div></div></div>
+        {% endif %}
+
+        <div class="card"><div class="card-header"><i class="fa-solid fa-clock-rotate-left me-1"></i>Activity log</div>
+            <ul class="list-group list-group-flush">
+                {% for h in history|reverse %}
+                <li class="list-group-item"><div class="d-flex justify-content-between"><span class="badge status-badge {{ h.status|badge }}">{{ h.status|title }}</span><small class="text-muted">{{ h.created_at|dt }}</small></div>
+                    {% if h.note %}<div class="small mt-1">{{ h.note }}</div>{% endif %}</li>
+                {% endfor %}
+            </ul></div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="card mb-4 border-primary border">
+            <div class="card-header bg-primary-subtle"><i class="fa-solid fa-bolt me-1"></i>Admin actions</div>
+            <div class="card-body">
+                {% if req.admin_remarks %}<div class="alert alert-secondary py-2 small"><strong>Latest remark:</strong> {{ req.admin_remarks }}</div>{% endif %}
+
+                {% if not available and req.status in ('COMPLETED', 'REJECTED') %}
+                <div class="text-muted"><i class="fa-solid fa-lock me-1"></i>This request is {{ req.status|lower }}. No further status actions are available.</div>
+                {% endif %}
+
+                {# --- forms that need extra input --- #}
+                {% if 'schedule_pickup' in available %}
+                <form method="post" action="{{ url_for('admin_request_action', rtype=req.rtype, rid=req.id) }}" class="border rounded p-3 mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="schedule_pickup">
+                    <label class="form-label fw-semibold">Schedule pickup</label>
+                    <input type="date" class="form-control mb-2" name="pickup_date" min="{{ today }}" value="{{ req.pickup_date or today }}" required>
+                    <button class="btn btn-info text-white w-100"><i class="fa-solid fa-calendar-check me-1"></i>Schedule pickup</button>
+                </form>
+                {% endif %}
+
+                {% if 'initiate_refund' in available %}
+                <form method="post" action="{{ url_for('admin_request_action', rtype=req.rtype, rid=req.id) }}" class="border rounded p-3 mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="initiate_refund">
+                    <label class="form-label fw-semibold">Initiate refund</label>
+                    <div class="row g-2 mb-2">
+                        <div class="col-5"><input type="number" step="0.01" min="0.01" max="{{ req.order_amount }}" class="form-control" name="amount" value="{{ req.order_amount }}" required title="Refund amount"></div>
+                        <div class="col-7"><select class="form-select" name="method">{% for m in refund_methods %}<option {{ 'selected' if m == req.refund_method }}>{{ m }}</option>{% endfor %}</select></div>
+                    </div>
+                    <div class="form-text mb-2">Order total: {{ req.order_amount|money }}. For partial returns enter a lower amount.</div>
+                    <button class="btn btn-warning w-100" data-confirm="Initiate this refund?"><i class="fa-solid fa-money-bill-transfer me-1"></i>Initiate refund</button>
+                </form>
+                {% endif %}
+
+                {% if req.status == 'REFUND INITIATED' and refund %}
+                <form method="post" action="{{ url_for('admin_request_action', rtype=req.rtype, rid=req.id) }}" class="border rounded p-3 mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="update_refund_status">
+                    <label class="form-label fw-semibold">Refund status ({{ refund.refund_code }})</label>
+                    <div class="input-group"><select class="form-select" name="refund_status">{% for s in refund_statuses %}<option {{ 'selected' if s == refund.status }}>{{ s }}</option>{% endfor %}</select>
+                        <button class="btn btn-outline-primary">Update</button></div>
+                </form>
+                {% endif %}
+
+                {% if req.status == 'EXCHANGE PROCESSING' and exchange %}
+                <form method="post" action="{{ url_for('admin_request_action', rtype=req.rtype, rid=req.id) }}" class="border rounded p-3 mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="update_exchange_status">
+                    <label class="form-label fw-semibold">Exchange status ({{ exchange.exchange_code }})</label>
+                    <div class="input-group"><select class="form-select" name="exchange_status">{% for s in exchange_statuses %}<option {{ 'selected' if s == exchange.status }}>{{ s }}</option>{% endfor %}</select>
+                        <button class="btn btn-outline-primary">Update</button></div>
+                    <div class="form-text">Set to <em>Delivered</em> before marking the request completed.</div>
+                </form>
+                {% endif %}
+
+                {# --- remarks + status buttons --- #}
+                <form method="post" action="{{ url_for('admin_request_action', rtype=req.rtype, rid=req.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label class="form-label fw-semibold" for="remarks">Admin remarks</label>
+                    <textarea class="form-control mb-3" id="remarks" name="remarks" rows="3" maxlength="500" placeholder="Visible to the customer. Required when rejecting or asking for information."></textarea>
+                    <div class="d-grid gap-2">
+                        {% if 'start_review' in available %}<button name="action" value="start_review" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass me-1"></i>Start review</button>{% endif %}
+                        {% if 'approve' in available %}<button name="action" value="approve" class="btn btn-success" data-confirm="Approve this request?"><i class="fa-solid fa-circle-check me-1"></i>Approve</button>{% endif %}
+                        {% if 'request_info' in available %}<button name="action" value="request_info" class="btn btn-warning"><i class="fa-solid fa-circle-question me-1"></i>Request more information</button>{% endif %}
+                        {% if 'reject' in available %}<button name="action" value="reject" class="btn btn-danger" data-confirm="Reject this request? The customer will be notified."><i class="fa-solid fa-circle-xmark me-1"></i>Reject</button>{% endif %}
+                        {% if 'mark_picked_up' in available %}<button name="action" value="mark_picked_up" class="btn btn-primary"><i class="fa-solid fa-truck-ramp-box me-1"></i>Mark as picked up</button>{% endif %}
+                        {% if 'quality_check' in available %}<button name="action" value="quality_check" class="btn btn-primary"><i class="fa-solid fa-clipboard-check me-1"></i>Mark quality check complete</button>{% endif %}
+                        {% if 'process_exchange' in available %}<button name="action" value="process_exchange" class="btn btn-warning" data-confirm="Reserve the replacement product and start processing the exchange?"><i class="fa-solid fa-arrows-rotate me-1"></i>Process exchange</button>{% endif %}
+                        {% if 'mark_completed' in available %}<button name="action" value="mark_completed" class="btn btn-success" data-confirm="Mark this request as completed?"><i class="fa-solid fa-flag-checkered me-1"></i>Mark completed</button>{% endif %}
+                        <button name="action" value="add_remark" class="btn btn-outline-secondary"><i class="fa-solid fa-comment-dots me-1"></i>Save remark only</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card"><div class="card-header"><i class="fa-solid fa-timeline me-1"></i>Lifecycle</div><div class="card-body">{% include "_timeline.html" %}</div></div>
+    </div>
+</div>
+{% endblock %}

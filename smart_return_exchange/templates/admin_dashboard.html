@@ -1,0 +1,63 @@
+{% extends "admin_base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div><h2 class="page-title mb-0">Admin Dashboard</h2><div class="text-muted">Overview of the complete return &amp; exchange lifecycle.</div></div>
+    <a href="{{ url_for('admin_requests', filter='pending') }}" class="btn btn-brand"><i class="fa-solid fa-hourglass-half me-1"></i>Review pending requests</a>
+</div>
+
+<div class="row g-3 mb-4">
+    {% for label, value, icon, color in [
+        ('Total Customers', stats.customers, 'fa-users', 'primary'),
+        ('Total Products', stats.products, 'fa-box', 'purple'),
+        ('Total Requests', stats.total, 'fa-clipboard-list', 'info'),
+        ('Pending Requests', stats.pending, 'fa-hourglass-half', 'warning'),
+        ('Approved Returns', stats.approved_returns, 'fa-thumbs-up', 'success'),
+        ('Completed Returns', stats.completed_returns, 'fa-circle-check', 'success'),
+        ('Rejected Requests', stats.rejected, 'fa-circle-xmark', 'danger'),
+        ('Exchange Requests', stats.exchanges, 'fa-arrows-rotate', 'info'),
+        ('Refunds Processed', stats.refunds, 'fa-money-bill-transfer', 'primary') ] %}
+    <div class="col-6 col-md-4 col-xl-{{ 4 if loop.index > 6 else 2 }}"><div class="card stat-card p-3 h-100">
+        <div class="d-flex align-items-center gap-3"><div class="stat-icon bg-soft-{{ color }}"><i class="fa-solid {{ icon }}"></i></div>
+            <div><div class="stat-value">{{ value }}</div><small class="text-muted">{{ label }}</small></div></div></div></div>
+    {% endfor %}
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6"><div class="card h-100"><div class="card-header">Requests by status</div><div class="card-body"><div style="height:280px"><canvas id="statusChart"></canvas></div></div></div></div>
+    <div class="col-lg-6"><div class="card h-100"><div class="card-header">Returns vs exchanges</div><div class="card-body"><div style="height:280px"><canvas id="typeChart"></canvas></div></div></div></div>
+    <div class="col-lg-6"><div class="card h-100"><div class="card-header">Requests by reason</div><div class="card-body"><div style="height:280px"><canvas id="reasonChart"></canvas></div></div></div></div>
+    <div class="col-lg-6"><div class="card h-100"><div class="card-header">Monthly requests</div><div class="card-body"><div style="height:280px"><canvas id="monthlyChart"></canvas></div></div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between">Latest requests <a href="{{ url_for('admin_requests') }}" class="small">View all</a></div>
+    {% if recent %}
+    <div class="table-responsive"><table class="table table-hover mb-0">
+        <thead><tr><th>Request</th><th>Customer</th><th>Product</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+        <tbody>{% for r in recent %}
+            <tr><td class="fw-semibold">{{ r.code }}<div class="small text-muted">{{ r.created_at|d }}</div></td><td>{{ r.customer_name }}</td><td>{{ r.product_name }}</td><td>{{ r.reason }}</td>
+                <td><span class="badge status-badge {{ r.status|badge }}">{{ r.status|title }}</span></td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-brand" href="{{ url_for('admin_request_details', rtype=r.rtype, rid=r.id) }}">Open</a></td></tr>
+        {% endfor %}</tbody></table></div>
+    {% else %}<div class="empty-state"><i class="fa-regular fa-folder-open d-block"></i><p>No requests yet.</p></div>{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+    var charts = {{ charts|tojson }};
+    var palette = ["#4f46e5", "#0ea5e9", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#64748b", "#84cc16"];
+    function empty(c) { return !c.values.length || c.values.every(function (v) { return v === 0; }); }
+    function makeChart(id, type, data, opts) {
+        var el = document.getElementById(id);
+        if (empty(data)) { el.parentElement.innerHTML = '<div class="empty-state">No data yet</div>'; return; }
+        new Chart(el, { type: type, data: { labels: data.labels, datasets: [{ data: data.values, backgroundColor: palette, borderRadius: type === "bar" ? 6 : 0 }] },
+            options: Object.assign({ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: type !== "bar", position: "bottom" } } }, opts || {}) });
+    }
+    makeChart("statusChart", "doughnut", charts.status);
+    makeChart("typeChart", "pie", charts.types);
+    makeChart("reasonChart", "bar", charts.reasons, { indexAxis: "y", scales: { x: { ticks: { precision: 0 } } } });
+    makeChart("monthlyChart", "bar", charts.monthly, { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } });
+</script>
+{% endblock %}

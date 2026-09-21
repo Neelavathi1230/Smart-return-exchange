@@ -1,0 +1,21 @@
+{% extends "admin_base.html" %}
+{% block title %}Customers{% endblock %}
+{% block page %}
+<div class="mb-4"><h2 class="page-title mb-0">Customers</h2><div class="text-muted">{{ customers|length }} registered customer(s)</div></div>
+<form method="get" class="card p-3 mb-3"><div class="input-group">
+    <input class="form-control" name="q" placeholder="Search by name, email or phone" value="{{ q }}">
+    <button class="btn btn-brand"><i class="fa-solid fa-magnifying-glass"></i></button>
+    {% if q %}<a class="btn btn-light" href="{{ url_for('admin_customers') }}">Clear</a>{% endif %}</div></form>
+{% if customers %}
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Orders</th><th>Requests</th><th>Joined</th></tr></thead>
+    <tbody>{% for c in customers %}
+        <tr><td class="fw-semibold">{{ c.name }}</td><td>{{ c.email }}</td><td>{{ c.phone }}</td><td class="small">{{ c.address }}</td>
+            <td>{{ c.order_count }}</td>
+            <td>{% if c.request_count %}<a href="{{ url_for('admin_requests', q=c.name) }}">{{ c.request_count }}</a>{% else %}0{% endif %}</td>
+            <td>{{ c.created_at|d }}</td></tr>{% endfor %}
+    </tbody></table></div></div>
+{% else %}
+<div class="card"><div class="empty-state"><i class="fa-solid fa-users d-block"></i><p>No customers found.</p></div></div>
+{% endif %}
+{% endblock %}

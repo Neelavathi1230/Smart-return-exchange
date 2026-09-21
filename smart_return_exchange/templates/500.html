@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong{% endblock %}
+{% block page %}
+<div class="empty-state py-5"><div class="display-1 fw-bold text-danger">500</div><h3>Something went wrong</h3>
+    <p>An unexpected error occurred. Please try again in a moment.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-brand"><i class="fa-solid fa-house me-1"></i>Back to home</a></div>
+{% endblock %}

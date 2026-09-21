@@ -1,0 +1,31 @@
+{% extends "admin_base.html" %}
+{% block title %}Manage Products{% endblock %}
+{% block page %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div><h2 class="page-title mb-0">Products</h2><div class="text-muted">Add, edit and remove products.</div></div>
+    <a href="{{ url_for('admin_product_new') }}" class="btn btn-brand"><i class="fa-solid fa-plus me-1"></i>Add product</a>
+</div>
+<form method="get" class="card p-3 mb-3"><div class="input-group">
+    <input class="form-control" name="q" placeholder="Search by name or category" value="{{ q }}">
+    <button class="btn btn-brand"><i class="fa-solid fa-magnifying-glass"></i></button>
+    {% if q %}<a class="btn btn-light" href="{{ url_for('admin_products') }}">Clear</a>{% endif %}</div></form>
+{% if items %}
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+    <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Return window</th><th>Exchange</th><th>Stock</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>{% for p in items %}
+        <tr><td><div class="d-flex align-items-center gap-2"><img src="{{ url_for('static', filename=p.image or 'img/products/placeholder.svg') }}" width="56" height="42" class="rounded" style="object-fit:cover" alt="">
+            <span class="fw-semibold">{{ p.name }}</span></div></td>
+            <td>{{ p.category }}</td><td>{{ p.price|money }}</td><td>{{ p.return_window_days }} days</td>
+            <td>{% if p.exchange_available %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+            <td class="{{ 'text-danger fw-semibold' if p.stock < 1 }}">{{ p.stock }}</td>
+            <td class="text-end text-nowrap">
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin_product_edit', pid=p.id) }}"><i class="fa-solid fa-pen"></i></a>
+                <form method="post" action="{{ url_for('admin_product_delete', pid=p.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm btn-outline-danger" data-confirm="Delete '{{ p.name }}'? This cannot be undone."><i class="fa-solid fa-trash"></i></button></form>
+            </td></tr>{% endfor %}
+    </tbody></table></div></div>
+{% else %}
+<div class="card"><div class="empty-state"><i class="fa-solid fa-box-open d-block"></i><p>No products found.</p></div></div>
+{% endif %}
+{% endblock %}

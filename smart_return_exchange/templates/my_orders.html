@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My Orders{% endblock %}
+{% block page %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div><h2 class="page-title mb-0">My Orders</h2><div class="text-muted">Choose a purchased product to return or exchange.</div></div>
+    <a href="{{ url_for('products') }}" class="btn btn-outline-brand"><i class="fa-solid fa-store me-1"></i>Browse products</a>
+</div>
+{% if orders %}
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+    <thead><tr><th>Product</th><th>Order ID</th><th>Purchased</th><th>Amount</th><th>Return eligibility</th><th class="text-end">Action</th></tr></thead>
+    <tbody>{% for o in orders %}
+        <tr>
+            <td><div class="d-flex align-items-center gap-2"><img src="{{ url_for('static', filename=o.product_image or 'img/products/placeholder.svg') }}" width="56" height="42" class="rounded" style="object-fit:cover" alt="">
+                <div><div class="fw-semibold">{{ o.product_name }}</div><small class="text-muted">Qty {{ o.quantity }}</small></div></div></td>
+            <td>{{ o.order_code }}</td>
+            <td>{{ o.purchase_date|d }}<div class="small text-muted">{{ o.days_since }} day(s) ago</div></td>
+            <td>{{ o.amount|money }}</td>
+            <td>{% if o.eligible %}<span class="text-success fw-semibold">&#10003; Eligible for Return</span><div class="small text-muted">{{ o.days_left }} day(s) left</div>
+                {% else %}<span class="text-danger fw-semibold">&#10005; Return Window Expired</span><div class="small text-muted">{{ o.return_window_days }}-day window</div>{% endif %}</td>
+            <td class="text-end text-nowrap">
+                {% if o.active_request %}
+                <a class="btn btn-sm btn-light" href="{{ url_for('request_details', rtype=o.active_request.rtype, rid=o.active_request.id) }}"><i class="fa-solid fa-eye me-1"></i>{{ o.active_request.code }}</a>
+                {% else %}
+                <a class="btn btn-sm btn-outline-danger {{ 'disabled' if not o.eligible }}" href="{{ url_for('create_return', order=o.id) }}">Request Return</a>
+                <a class="btn btn-sm btn-outline-primary {{ 'disabled' if not o.eligible or not o.exchange_available }}" href="{{ url_for('create_exchange', order=o.id) }}">Request Exchange</a>
+                {% endif %}
+            </td></tr>{% endfor %}
+    </tbody></table></div></div>
+{% else %}
+<div class="card"><div class="empty-state"><i class="fa-solid fa-bag-shopping d-block"></i><p>You have no orders yet. Place a demo order from the products page.</p>
+    <a href="{{ url_for('products') }}" class="btn btn-brand">Browse products</a></div></div>
+{% endif %}
+{% endblock %}
